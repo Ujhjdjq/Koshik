@@ -1,0 +1,12 @@
+﻿[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.koshik",
+      "sha256_cert_fingerprints": [
+        "3F:D7:0D:CD:7D:95:84:C3:46:F8:0C:DD:0C:E5:2A:76:AB:6D:DF:B4:C4:BB:0E:8F:97:D1:06:5A:D5:0E:08:88"
+      ]
+    }
+  }
+]

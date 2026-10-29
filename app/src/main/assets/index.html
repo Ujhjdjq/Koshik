@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Кошик - My List</title>
+    <link rel="stylesheet" href="styles.css?v=48">
+</head>
+<body class="theme-standard">
+<div class="phone-container">
+    <header class="header">
+        <div class="header-title-container">
+            <div
+                    id="shopLogo"
+                    class="shop-logo"
+                    onclick="openShopLogoPicker()"
+                    title="Логотип списку"
+            >
+                <img
+                        id="shopLogoImage"
+                        src="atb.png"
+                        alt="Логотип списку"
+                >
+            </div>
+
+            <div class="list-switcher">
+                <button
+                        id="listSwitcherButton"
+                        class="list-switcher-button"
+                        type="button"
+                        onclick="toggleListDropdown(event)"
+                >
+                    <span style="display: flex; flex-direction: column; align-items: flex-start; min-width: 0; flex: 1;">
+                        <span id="listSwitcherLabel" style="font-size: 22px; font-weight: 700;">АТБ</span>
+                        <span id="listSwitcherSubtitle" style="display: none; font-size: 10px; opacity: 0.8; font-weight: normal; line-height: 1;"></span>
+                    </span>
+                    <span class="list-switcher-arrow">▼</span>
+                </button>
+
+                <div
+                        id="listDropdown"
+                        class="list-dropdown"
+                        onclick="event.stopPropagation()"
+                ></div>
+            </div>
+
+            <select id="listSelector" onchange="switchList()" style="display: none;">
+                <option value="atb">АТБ</option>
+                <option value="silpo">Сільпо</option>
+                <option value="list9">Спільний список</option>
+            </select>
+
+            <button
+                    id="listMenuButton"
+                    class="list-menu-button"
+                    type="button"
+                    onclick="openListMenu(event)"
+                    aria-label="Меню списку"
+                    title="Меню списку"
+            >
+                ⋮
+            </button>
+            <div id="listMenu" class="list-menu" onclick="event.stopPropagation()">
+                <button
+                        id="searchStoreMenuItem"
+                        type="button"
+                        onclick="closeListMenu(); openSearchStoreModal();"
+                >
+                    <span>🔍</span>
+                    <span>Магазин для пошуку</span>
+                </button>
+                <button
+                        id="createListMenuItem"
+                        type="button"
+                        onclick="closeListMenu(); createCustomList();"
+                >
+                    <span>➕</span>
+                    <span>Створити список</span>
+                </button>
+                <button
+                        id="renameListMenuItem"
+                        type="button"
+                        onclick="openRenameFromListMenu()"
+                >
+                    <span>✏️</span>
+                    <span>Перейменувати список</span>
+                </button>
+                <button
+                        id="deleteListMenuItem"
+                        type="button"
+                        onclick="closeListMenu(); deleteCurrentCustomList();"
+                >
+                    <span>🗑️</span>
+                    <span>Видалити список</span>
+                </button>
+
+                <button
+                        id="categoriesMenuItem"
+                        type="button"
+                        onclick="toggleCategoriesFromListMenu()"
+                >
+                    <span>▤</span>
+                    <span id="categoriesMenuText">Прибрати категорії</span>
+                </button>
+
+                <button
+                        id="pricesMenuItem"
+                        type="button"
+                        onclick="togglePricesFromListMenu()"
+                >
+                    <span>💲</span>
+                    <span id="pricesMenuText">Прибрати ціни</span>
+                </button>
+
+                <button
+                        id="historyMenuItem"
+                        type="button"
+                        onclick="openHistoryModal()"
+                >
+                    <span>🕘</span>
+                    <span>Історія товарів</span>
+                </button>
+                <button
+                        id="themeMenuItem"
+                        type="button"
+                        onclick="toggleThemeMenu(event)"
+                >
+                    <span>🎨</span>
+                    <span>Тема</span>
+                </button>
+
+                <div id="themeSubMenu" class="theme-sub-menu">
+                    <button type="button" onclick="setTheme('standard')">
+                        <span class="theme-check" data-theme="standard">✓</span>
+                        <span>Стандартна</span>
+                    </button>
+
+                    <button type="button" onclick="setTheme('light')">
+                        <span class="theme-check" data-theme="light">✓</span>
+                        <span>Світла</span>
+                    </button>
+
+                    <button type="button" onclick="setTheme('dark')">
+                        <span class="theme-check" data-theme="dark">✓</span>
+                        <span>Темна</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Єдине поле додавання товару: кнопка «+» або Enter -->
+    <div class="search-filter-bar">
+        <div class="search-row">
+            <input
+                    type="text"
+                    id="searchInput"
+                    class="search-input"
+                    placeholder="Введіть товар (напр. Молоко)..."
+                    enterkeyhint="done"
+                    autocomplete="off"
+                    onkeydown="if (event.key === 'Enter') { event.preventDefault(); addTypedText(true); }"
+            >
+
+            <button
+                    class="add-inline-btn"
+                    type="button"
+                    onpointerdown="keepSearchInputFocused(event)"
+                    onpointerup="addTypedText(true)"
+                    onclick="addTypedText(true)"
+            >
+                +
+            </button>
+        </div>
+
+        <div
+                id="historySuggestions"
+                class="history-suggestions"
+                style="display: none;"
+        ></div>
+
+        <div class="add-notice" id="addNotice"></div>
+    </div>
+    <div class="list-content" id="listContent"></div>
+
+    <div class="stats-panel">
+        <div class="counter-badge">
+            <span id="counterText">Куплено: 0 із 0</span>
+            <span id="totalPriceText">Сума: 0.00 грн</span>
+        </div>
+    </div>
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="clearCurrentList()">
+            <span>🗑️</span>
+            <span>Очистити</span>
+        </div>
+
+        <div class="nav-item" onclick="shareList()">
+            <span>🔗</span>
+            <span>Поділитись</span>
+        </div>
+
+        <div class="nav-item" onclick="triggerGoogleAnalytics()">
+            <span>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                    <path d="M5 9h3v11H5zM10.5 4h3v16h-3zM16 13h3v7h-3z"/>
+                </svg>
+            </span>
+            <span>Ціна</span>
+        </div>
+    </nav>
+
+</div>
+<!-- Модальне вікно: Вибір із 6 варіантів емодзі та авто-ціна АТБ -->
+<!-- Крок 3: автоматичний пошук і вибір конкретного товару АТБ -->
+<div class="modal" id="pickerModal" style="display: none;" onclick="if (event.target === this) closePickerModal();">
+    <div class="modal-content atb-picker-modal">
+        <h3 id="pickerTitle">Обрати товар АТБ</h3>
+
+        <p id="atbPickerStatus" class="atb-picker-status">
+            Шукаємо товари АТБ…
+        </p>
+        <div
+                id="silpoLoadingLine"
+                class="silpo-loading-line"
+                style="display: none;"
+        ></div>
+        <div id="atbPickerResults" class="atb-picker-results"></div>
+
+        <div class="atb-picker-actions">
+            <button class="cancel-atb-picker-button"
+                    type="button"
+                    onclick="closePickerModal()">
+                Скасувати
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальне вікно: Вибір логотипу/фото для самого списку магазину -->
+<div class="modal" id="shopLogoModal" style="display: none;" onclick="if (event.target === this) closeShopLogoModal();">
+    <div class="modal-content">
+        <h3>Оберіть фото для списку</h3>
+
+        <div class="photo-grid-label">6 запропонованих варіантів (натисніть для вибору):</div>
+
+        <div
+                id="shopPhotoLoading"
+                style="display:none; padding:18px; text-align:center; color:#555;"
+        >
+            Шукаємо фото в інтернеті…
+        </div>
+
+        <div id="shopPhotoGrid" class="photo-grid">
+            <!-- Сюди JavaScript підставить знайдені або локальні фото -->
+        </div>
+
+        <div class="photo-grid-label">Або знайдіть інше фото в інтернеті:</div>
+
+        <div class="search-row" style="margin-bottom: 12px;">
+            <input
+                    type="text"
+                    id="shopPhotoSearchInput"
+                    class="search-input"
+                    style="background: #ffffff;"
+                    placeholder="Введіть запит (напр. продукти, маркет)..."
+            >
+            <button
+                    class="add-inline-btn"
+                    style="font-size: 16px;"
+                    onclick="searchNewShopPhotos()"
+            >
+                🔍
+            </button>
+        </div>
+
+        <div class="modal-actions">
+            <button
+                    style="background: #e9ecef; color: #495057;"
+                    onclick="showMyShopIcons()"
+            >
+                Мої іконки
+            </button>
+
+            <button
+                    style="background: #e9ecef; color: #495057;"
+                    onclick="closeShopLogoModal()"
+            >
+                Скасувати
+            </button>
+
+            <button
+                    class="btn-add"
+                    onclick="saveShopLogoChanges()"
+            >
+                Зберегти
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Нове модальне вікно: Підтвердження видалення товару -->
+<div class="modal" id="deleteConfirmModal" style="display: none;">
+    <div class="modal-content" style="text-align: center;">
+        <h3 style="color: #e63946; margin-bottom: 8px;">Видалення товару</h3>
+        <p id="deleteModalText"
+           style="font-size: 15px; margin-bottom: 15px; color: var(--text-main);">Ви дійсно хочете
+            видалити цей товар зі списку?</p>
+
+        <div class="modal-actions" style="justify-content: center; gap: 16px;">
+            <button style="background: #e9ecef; color: #495057; padding: 10px 20px;"
+                    onclick="closeDeleteModal()">Скасувати
+            </button>
+            <button style="background: #e63946; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600;"
+                    onclick="confirmProductDeletion()">Видалити
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Модальне вікно: підтвердження очищення поточного списку -->
+<div class="modal" id="clearListConfirmModal" style="display: none;">
+    <div class="modal-content clear-list-modal">
+        <div class="clear-list-icon">🗑️</div>
+
+        <h3>Очистити список?</h3>
+
+        <p id="clearListModalText">
+            Усі товари буде видалено без можливості відновлення.
+        </p>
+
+        <div class="modal-actions clear-list-actions">
+            <button
+                    class="clear-list-cancel-btn"
+                    type="button"
+                    onclick="closeClearListModal()">
+                Скасувати
+            </button>
+
+            <button
+                    class="clear-list-confirm-btn"
+                    type="button"
+                    onclick="confirmClearCurrentList()">
+                Очистити
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Модальне вікно: перейменування поточного списку -->
+<div class="modal" id="renameListModal" style="display: none;">
+    <div class="modal-content rename-list-modal">
+        <h3>Перейменувати список</h3>
+
+        <input
+                id="renameListInput"
+                type="text"
+                maxlength="40"
+                placeholder="Введіть назву списку"
+                autocomplete="off"
+                enterkeyhint="done"
+                onkeydown="if (event.key === 'Enter') {
+                event.preventDefault();
+                saveRenamedList();
+            }"
+        >
+
+        <div class="modal-actions">
+            <button
+                    type="button"
+                    style="background: #e9ecef; color: #495057;"
+                    onclick="closeRenameListModal()">
+                Скасувати
+            </button>
+
+            <button
+                    class="btn-add"
+                    type="button"
+                    onclick="saveRenamedList()">
+                Зберегти
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Модальне вікно: перейменування товару -->
+<div class="modal" id="renameProductModal" style="display: none;">
+    <div class="modal-content rename-list-modal">
+        <h3>Перейменувати товар</h3>
+
+        <input
+                id="renameProductInput"
+                type="text"
+                maxlength="60"
+                placeholder="Введіть назву товару"
+                autocomplete="off"
+                enterkeyhint="done"
+                onkeydown="if (event.key === 'Enter') {
+                event.preventDefault();
+                saveRenamedProduct();
+            }"
+        >
+
+        <div class="modal-actions">
+            <button
+                    type="button"
+                    style="background: #e9ecef; color: #495057;"
+                    onclick="closeRenameProductModal()">
+                Скасувати
+            </button>
+
+            <button
+                    class="btn-add"
+                    type="button"
+                    onclick="saveRenamedProduct()">
+                Зберегти
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Нове модальне вікно: Інтелектуальний Дебаг/Діагностика Цін -->
+<!-- Крок 4: індикатор оновлення цін -->
+<div class="modal" id="priceProgressModal" style="display: none;">
+    <div class="modal-content price-progress-modal">
+        <h3>Оновлення цін</h3>
+        <p id="priceProgressText" class="price-progress-text">
+            Оновлюємо ціни…
+        </p>
+    </div>
+</div>
+<!-- Крок 4: звіт оновлення цін і запит на прив'язування -->
+<div class="modal" id="priceUpdateModal" style="display: none;">
+    <div class="modal-content price-update-modal">
+        <h3>Оновлення цін</h3>
+
+        <p id="priceUpdateSummary" class="price-report-summary"></p>
+
+        <div id="priceUnavailableBlock" class="price-report-block">
+            <div class="price-report-title">Не вдалося знайти точний товар:</div>
+            <div id="priceUnavailableList"></div>
+            <p class="price-report-note">
+                Попередню ціну залишено, але символ ₴ показано червоним.
+            </p>
+        </div>
+
+        <div id="priceUnlinkedBlock" class="price-report-block">
+            <div id="priceUnlinkedTitle" class="price-report-title">
+                Не обрано товарів у магазині:
+            </div>
+            <div id="priceUnlinkedList"></div>
+            <p class="price-bind-question">Обрати товари в магазині зараз?</p>
+        </div>
+
+        <div class="price-report-actions">
+            <button id="bindUnlinkedNoButton"
+                    class="price-report-no-button"
+                    type="button"
+                    onclick="closePriceUpdateReport()">
+                Ні
+            </button>
+
+            <button id="bindUnlinkedYesButton"
+                    class="price-report-yes-button"
+                    type="button"
+                    onclick="beginBindingUnlinkedItems()">
+                Так
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Крок 4: результат послідовної прив'язки товарів -->
+<div class="modal" id="bindingResultModal" style="display: none;">
+    <div class="modal-content price-update-modal">
+        <h3>Вибір товарів у магазині</h3>
+        <p id="bindingResultText" class="price-report-summary"></p>
+        <div id="bindingResultList" class="price-report-block"></div>
+
+        <div class="price-report-actions">
+            <button class="price-report-no-button"
+                    type="button"
+                    onclick="closeBindingResult()">
+                Закрити
+            </button>
+        </div>
+    </div>
+</div>
+<div class="modal" id="atbDebugModal" style="display: none;">
+    <div class="modal-content"
+         style="width: 92%; max-height: 80vh; display: flex; flex-direction: column;">
+        <h3 style="color: var(--dark-teal); margin-bottom: 8px;">📊 Звіт діагностики АТБ &
+            Google</h3>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Скопіюйте цей
+            текст та надішліть у чат для виправлення помилок:</p>
+
+        <!-- Поле з логами, яке можна легко виділити та скопіювати на телефоні -->
+        <textarea id="atbDebugTextArea" readonly
+                  style="width: 100%; flex: 1; min-height: 180px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-family: monospace; font-size: 13px; background: #f8fafc; resize: none; outline: none; margin-bottom: 12px;"></textarea>
+
+        <div class="modal-actions" style="gap: 12px;">
+            <button style="background: var(--accent-orange); color: white;"
+                    onclick="navigator.clipboard.writeText(document.getElementById('atbDebugTextArea').value); alert('Текст звіту скопійовано у буфер обміну!');">
+                📋 Скопіювати текст
+            </button>
+            <button style="background: #e9ecef; color: #495057;"
+                    onclick="document.getElementById('atbDebugModal').style.display = 'none';">
+                Закрити
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Підключення автономної діагностики екрана та основної логіки програми -->
+<!--<script src="debug.js"></script> -->
+<!-- Модальне вікно: історія придбаних товарів -->
+<div class="modal" id="historyModal" style="display: none;" onclick="if (event.target === this) closeHistoryModal();">
+    <div class="modal-content history-modal-content">
+        <div class="history-modal-header">
+            <h3>Історія товарів</h3>
+
+            <button
+                    type="button"
+                    class="history-close-button"
+                    onclick="closeHistoryModal()"
+                    aria-label="Закрити історію"
+            >
+                ×
+            </button>
+        </div>
+
+        <p id="historyModalEmpty" class="history-empty-text">
+            Історія поки порожня.
+        </p>
+
+        <div id="historyModalList" class="history-modal-list"></div>
+
+        <div class="history-modal-actions">
+            <button
+                    id="clearHistoryButton"
+                    type="button"
+                    class="history-clear-button"
+                    onclick="confirmClearHistory()"
+            >
+                Очистити історію
+            </button>
+
+            <button
+                    type="button"
+                    class="history-done-button"
+                    onclick="closeHistoryModal()"
+            >
+                Готово
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальне вікно: підтвердження очищення історії -->
+<div class="modal" id="clearHistoryConfirmModal" style="display: none;">
+    <div class="modal-content clear-list-modal">
+        <div class="clear-list-icon">🕘</div>
+
+        <h3>Очистити історію?</h3>
+
+        <p>
+            Буде видалено всі збережені придбані товари.
+            Цю дію неможливо скасувати.
+        </p>
+
+        <div class="modal-actions clear-list-actions">
+            <button
+                    type="button"
+                    class="clear-list-cancel-btn"
+                    onclick="closeClearHistoryConfirmModal()"
+            >
+                Скасувати
+            </button>
+
+            <button
+                    type="button"
+                    class="clear-list-confirm-btn"
+                    onclick="clearHistory()"
+            >
+                Очистити
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Модальне вікно: магазин для пошуку товарів -->
+<div class="modal" id="searchStoreModal" style="display: none;" onclick="if (event.target === this) closeSearchStoreModal();">
+    <div class="modal-content">
+        <h3>Магазин для пошуку</h3>
+
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">
+            Оберіть магазин, у якому шукати товари.
+        </p>
+
+        <div id="searchStoreList" class="search-store-list"></div>
+
+        <div class="modal-actions" style="margin-top: 15px;">
+            <button
+                    type="button"
+                    class="edit-history-cancel-button"
+                    onclick="closeSearchStoreModal()"
+            >
+                Закрити
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Модальне вікно: редагування товару в історії -->
+<div class="modal" id="editHistoryModal" style="display: none;" onclick="if (event.target === this) closeEditHistoryModal();">
+    <div class="modal-content edit-history-modal">
+        <h3>Редагувати історію</h3>
+
+        <label class="edit-history-label" for="editHistoryNameInput">
+            Назва товару
+        </label>
+
+        <input
+                id="editHistoryNameInput"
+                type="text"
+                maxlength="120"
+                autocomplete="off"
+        >
+
+        <div
+                id="editHistoryStoreSuggestion"
+                class="edit-history-store-suggestion"
+                style="display: none;"
+                onclick="applyStoreNameSuggestion()"
+        ></div>
+
+        <label class="edit-history-label" for="editHistoryCountInput">
+            Кількість покупок
+        </label>
+
+        <input
+                id="editHistoryCountInput"
+                type="number"
+                min="1"
+                step="1"
+                inputmode="numeric"
+        >
+
+        <div class="modal-actions">
+            <button
+                    type="button"
+                    class="edit-history-cancel-button"
+                    onclick="closeEditHistoryModal()"
+            >
+                Скасувати
+            </button>
+
+            <button
+                    type="button"
+                    class="edit-history-save-button"
+                    onclick="saveEditedHistoryItem()"
+            >
+                Зберегти
+            </button>
+        </div>
+    </div>
+</div>
+<script src="suggestions.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

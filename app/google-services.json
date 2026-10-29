@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "257226093911",
+    "firebase_url": "https://koshyk-9d9c9-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "koshyk-9d9c9",
+    "storage_bucket": "koshyk-9d9c9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:257226093911:android:4831fed676cc7fa2303a12",
+        "android_client_info": {
+          "package_name": "com.example.koshik"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9Z2o0iTuOWyGgi_qO61pTBAeotD0ICX0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

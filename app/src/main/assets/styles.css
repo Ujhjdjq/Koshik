@@ -1,0 +1,2532 @@
+
+        :root { --primary-teal: #008080; --dark-teal: #005a5a; --accent-orange: #ff922b; --bg-main: #f8fafc; --bg-card: #ffffff; --bg-bought: #e3fafc; --text-main: #212529; --text-muted: #868e96; --border-color: #dee2e6; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+        body { background-color: #e9ecef; color: var(--text-main); display: flex; justify-content: center; }
+                       .phone-container {
+            width: 100%;
+            max-width: 450px;
+
+            /* Змінюємо фон самого контейнера на колір шапки,
+               щоб зона під камерою зафарбувалася в бірюзовий */
+            background: var(--primary-teal);
+
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+
+            /* Тут відступ більше не потрібен, ми його прибираємо */
+            padding-top: 0;
+        }
+
+        .header {
+            position: relative;
+            z-index: 100;
+            background-color: var(--primary-teal);
+            padding: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+            /* Відступ під камеру + менший відступ зверху */
+            padding-top: calc(6px + env(safe-area-inset-top, 0px));
+            padding-bottom: 2px;
+        }
+        .header-title-container { display: flex; align-items: center; gap: 12px; position: relative; flex: 1; min-width: 0; }
+        .shop-logo {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: white;
+            border: 2px solid white;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .shop-logo::before {
+            content: '';
+            position: absolute;
+            inset: -12px;
+            background-image: var(--shop-logo-bg);
+            background-size: cover;
+            background-position: center;
+            filter: blur(10px);
+        }
+
+        .shop-logo img {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: transparent;
+        }
+        .search-filter-bar {
+            background: var(--bg-card);
+            padding: 4px 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+        .search-row { display: flex; gap: 8px; width: 100%; }
+        .search-input { flex: 1; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; background: #f1f3f5; outline: none; }
+        .add-inline-btn {
+            width: 42px;
+            height: 42px;
+            background: var(--accent);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.12s ease, background-color 0.2s ease;
+        }
+
+        .add-inline-btn:active {
+            transform: scale(0.94);
+        }
+
+        body.theme-dark .add-inline-btn {
+            background: var(--accent);
+            color: #06282a;
+        }
+        .add-notice { display: none; font-size: 13px; color: #d9480f; background: #fff4e6; border: 1px solid #ffd8a8; border-radius: 8px; padding: 6px 10px; }
+        .filter-row { display: flex; justify-content: space-between; align-items: center; }
+        .filter-btn { background: #e6f4f4; color: var(--dark-teal); border: 1px solid #b2dfdf; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .list-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+
+            /* Додаємо цей рядок, щоб повернути світлий фон списку покупок */
+            background-color: var(--bg-main);
+        }
+        .delete-item-btn:active {
+            transform: scale(0.85);
+        }
+
+        /* 🆕 НОВИЙ СТИЛЬ: Гарні заголовки категорій над картками товарів */
+        .category-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--dark-teal);
+            background: #e6f4f4;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* 🛠 ВИПРАВЛЕНО: Центруємо емодзі та текст разом */
+            gap: 6px;
+            /* 🛠 ВИПРАВЛЕНО: Видалили бордер зліва для повної симетрії роздільника */
+        }
+
+        /* Стиль аватарки з ефектом клика */
+        .product-details .meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 1px; /* Мінімальний відступ до ціни */
+        }
+        .bought-divider { text-align: center; margin: 15px 0 5px 0; font-size: 14px; font-weight: bold; color: var(--dark-teal); display: flex; align-items: center; gap: 10px; }
+        .bought-divider::before, .bought-divider::after { content: ""; flex: 1; height: 2px; background: #b2dfdf; }
+        .product-item.bought .name { text-decoration: line-through; color: #495057; }
+        .stats-panel {
+            background: var(--card-bg);
+            padding: 6px 16px 6px 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .counter-badge {
+            background: var(--app-bg);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .counter-badge #totalPriceText {
+            color: var(--accent);
+        }
+        .action-buttons { display: flex; justify-content: space-around; gap: 10px; }
+        .action-btn { flex: 1; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; color: #495057; cursor: pointer; }
+        .bottom-nav { background: var(--dark-teal); height: 65px; display: flex; justify-content: space-around; align-items: center; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #b2dfdf; cursor: pointer; flex: 1; padding: 10px 0; }
+        .nav-item.active { color: white; font-weight: bold; }
+        .nav-item span:first-child { font-size: 20px; margin-bottom: 3px; }
+        .nav-item:active {
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 12px;
+            transition: background-color 0.12s ease;
+        }
+
+        body.theme-dark .nav-item:active {
+            background: rgba(255, 255, 255, 0.10);
+        }
+        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 10; backdrop-filter: blur(2px); }
+        .modal-content { background: var(--bg-card); padding: 20px; border-radius: 16px; width: 88%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-content h3 { margin-bottom: 12px; color: var(--dark-teal); font-size: 17px; }
+        .modal-content input { width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; outline: none; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 15px; }
+        .modal-actions button { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-add { background: var(--primary-teal); color: white; }
+
+        /* Сітка для 6 варіантів картинок */
+        .photo-grid-label { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .photo-option { width: 100%; height: 60px; border: 2px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; background: #f8fafc; }
+        .photo-option.selected { border-color: var(--primary-teal); background: #e6f4f4; box-shadow: 0 0 5px rgba(0,128,128,0.4); }
+        .photo-option img { width: 100%; height: 100%; border-radius: 6px; object-fit: cover; }
+            /* ==========================================
+           КРОК 2: Кнопки керування кількістю товару
+           ========================================== */
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            min-width: 92px;
+            height: 30px;
+            border: 1px solid #b2dfdf;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f3fbfb;
+        }
+
+        .qty-btn {
+            width: 27px;
+            height: 100%;
+            padding: 0;
+            border: none;
+            background: #e6f4f4;
+            color: var(--dark-teal);
+            font-size: 19px;
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .qty-btn:active {
+            background: #bfe8e8;
+            transform: scale(0.93);
+        }
+
+        .qty-value {
+            min-width: 38px;
+            padding: 0 4px;
+            color: var(--dark-teal);
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .quantity-open-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            font: inherit;
+            cursor: pointer;
+            text-align: right;
+        }
+
+        .quantity-inline-value {
+            font-size: 13px;
+            color: #555555;
+            margin-left: 6px;
+            white-space: nowrap;
+        }
+        /* ==========================================
+           КРОК 3: Вибір конкретного товару АТБ
+           ========================================== */
+        .atb-picker-modal {
+            max-height: 82vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .atb-picker-status {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.35;
+            margin-bottom: 12px;
+        }
+
+        .atb-picker-results {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+        .atb-search-result {
+            width: 100%;
+            min-height: 74px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: #ffffff;
+            color: var(--text-main);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .atb-search-result:active {
+            background: #e6f4f4;
+            border-color: var(--primary-teal);
+            transform: scale(0.99);
+        }
+
+        .atb-result-photo {
+            width: 54px;
+            height: 54px;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .atb-result-image {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+        }
+
+        .atb-result-fallback {
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
+        }
+
+        .atb-result-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .atb-result-name {
+            display: -webkit-box;
+            overflow: hidden;
+            color: #343a40;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.25;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+        }
+
+        .atb-result-price {
+            margin-top: 4px;
+            color: var(--dark-teal);
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .load-more-atb-button {
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px;
+            border: 1px solid #b2dfdf;
+            border-radius: 8px;
+            background: #e6f4f4;
+            color: var(--dark-teal);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .load-more-atb-button:active {
+            background: #bfe8e8;
+        }
+                .atb-picker-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .atb-picker-actions button {
+            flex: 1;
+            min-height: 42px;
+            margin: 0;
+        }
+
+        .atb-picker-actions .load-more-atb-button {
+            width: auto;
+            margin: 0;
+        }
+
+        .cancel-atb-picker-button {
+            border: none;
+            border-radius: 8px;
+            background: #e9ecef;
+            color: #495057;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .cancel-atb-picker-button:active {
+            background: #dee2e6;
+        }
+           /* ==========================================
+           КРОК 4: Оновлення цін і прив'язування АТБ
+           ========================================== */
+        .price-progress-modal {
+            max-width: 330px;
+            text-align: center;
+        }
+
+        .price-progress-text {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.45;
+            white-space: pre-line;
+        }
+
+        .price-update-modal {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .price-report-summary {
+            color: var(--text-main);
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .price-report-block {
+            margin-top: 10px;
+            color: var(--text-main);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .price-report-title,
+        .binding-result-caption {
+            margin-bottom: 5px;
+            color: var(--dark-teal);
+            font-weight: 800;
+        }
+
+        .price-report-item {
+            padding: 3px 0;
+            color: #495057;
+        }
+
+        .price-report-note {
+            margin-top: 8px;
+            color: var(--text-muted);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .price-bind-question {
+            margin-top: 12px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .price-report-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .price-report-actions button {
+            flex: 1;
+            min-height: 42px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .price-report-no-button {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .price-report-no-button:active {
+            background: #dee2e6;
+        }
+
+        .price-report-yes-button {
+            background: var(--primary-teal);
+            color: white;
+        }
+
+        .price-report-yes-button:active {
+            background: var(--dark-teal);
+        }
+                /* ==========================================
+           Компактна картка: фото — назва — кількість — сума — ×
+           ========================================== */
+
+        /*
+         * Рамка разом із фото займає всю внутрішню висоту картки.
+         * Це не окреме збільшення картинки: збільшується весь блок фото.
+         */
+         .product-img img {
+             position: absolute;
+             top: 0;
+             left: 0;
+
+             width: 100%;
+             height: 100%;
+             display: block;
+             border-radius: 7px;
+             object-fit: contain;
+             background: #ffffff;
+         }
+
+        /*
+         * Звичайний вигляд кількості:
+         * «Молоко  [ 5 шт. ]».
+         */
+        .product-quantity {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .quantity-display-btn {
+            padding: 4px 6px;
+            border: 1px solid #b2dfdf;
+            border-radius: 7px;
+            background: #e6f4f4;
+            color: var(--dark-teal);
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1.1;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .quantity-display-btn:active {
+            background: #bfe8e8;
+            transform: scale(0.96);
+        }
+
+                 /*
+         * У звичайному режимі:
+         * «Молоко Яготинське · 5 шт.»
+         */
+        .product-title-line {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            gap: 3px;
+        }
+
+         /*
+         * Кількість без плашки, рамки й фону.
+         */
+        .quantity-inline-btn {
+            flex-shrink: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: var(--dark-teal);
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.25;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .quantity-inline-btn:active {
+            color: var(--primary-teal);
+            transform: scale(0.96);
+        }
+
+        /*
+         * Усі кнопки редагування мають постійне місце:
+         * −  5 шт.  +  ✓
+         */
+        .quantity-adjust-btn:active {
+            background: #bfe8e8;
+            transform: scale(0.90);
+        }
+
+        .quantity-confirm-btn:active {
+            background: var(--dark-teal);
+            transform: scale(0.90);
+        }
+
+        /*
+         * Сума та × зафіксовані праворуч.
+         */
+
+
+        .delete-item-btn {
+            width: 30px;
+            min-height: 50px;
+            padding: 0 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+            line-height: 1;
+        }
+
+        /*
+         * Компактний режим для вузьких екранів.
+         */
+              /* ==========================================
+               Компактні категорії та менші відстані у списку
+               ========================================== */
+
+            /* Зменшуємо проміжок між усіма елементами списку */
+            .list-content {
+                gap: 4px;
+            }
+
+            /* Категорія — лише стриманий підпис над товарами */
+            .category-header {
+                min-height: 18px;
+                margin: 3px 0 0;
+                padding: 2px 4px;
+
+                background: transparent;
+                border-radius: 0;
+
+                color: var(--text-muted);
+                font-size: 11px;
+                font-weight: 600;
+                line-height: 1.1;
+                letter-spacing: 0.02em;
+
+                justify-content: center;
+                gap: 4px;
+            }
+           /* ==========================================
+           Модальне вікно очищення списку
+           ========================================== */
+
+        .clear-list-modal {
+            max-width: 340px;
+            text-align: center;
+        }
+
+        .clear-list-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #fff0f0;
+            border: 1px solid #ffc9c9;
+            border-radius: 50%;
+
+            font-size: 25px;
+        }
+
+        .clear-list-modal h3 {
+            margin-bottom: 8px;
+            color: #e63946;
+        }
+
+        .clear-list-modal p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .clear-list-actions {
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .clear-list-cancel-btn,
+        .clear-list-confirm-btn {
+            min-width: 118px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .clear-list-cancel-btn {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .clear-list-cancel-btn:active {
+            background: #dee2e6;
+        }
+
+        .clear-list-confirm-btn {
+            background: #e63946;
+            color: #ffffff;
+        }
+
+        .clear-list-confirm-btn:active {
+            background: #c92a2a;
+            transform: scale(0.97);
+        }
+        .rename-list-modal {
+    max-width: 340px;
+}
+
+.header select {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+
+    height: 38px;
+    padding: 0 30px 0 12px;
+
+    overflow: hidden;
+    border: none;
+    border-radius: 8px;
+
+    background-color: var(--primary-teal);
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 38px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    cursor: pointer;
+    appearance: auto;
+}
+
+.header select option {
+    background-color: #ffffff;
+    color: #212529;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.rename-list-button {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    margin-left: 4px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #ffffff;
+    font-size: 18px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.rename-list-button:active {
+    background: rgba(255, 255, 255, 0.18);
+    transform: scale(0.92);
+}
+
+.list-menu-button {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 0 0 5px 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--header-text);
+    font-size: 27px;
+    font-weight: 800;
+    line-height: 27px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.list-menu-button:active {
+    background: rgba(255, 255, 255, 0.18);
+    transform: scale(0.92);
+}
+
+.list-menu {
+    display: none;
+    position: absolute;
+    top: 42px;
+    right: 0;
+    z-index: 20;
+    min-width: 220px;
+    padding: 6px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+
+.list-menu.visible {
+    display: block;
+}
+
+.list-menu button {
+    width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 11px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.list-menu button:active {
+    background: #e6f4f4;
+}
+
+.list-menu button span:first-child {
+    width: 22px;
+    text-align: center;
+    font-size: 17px;
+}
+     /* ==========================================
+   Підказки товарів з історії
+   ========================================== */
+
+/*
+ * Підказки позиціонуються щодо всього блоку пошуку.
+ * Вони з'являються під .search-row, а addNotice,
+ * якщо з'явиться, буде вже нижче або закриється списком.
+ */
+
+
+/*
+ * Список підказок знаходиться під полем і кнопкою +.
+ * 12px — верхній внутрішній відступ .search-filter-bar.
+ * 42px — висота рядка з input і кнопкою.
+ */
+.history-suggestions {
+    position: absolute;
+    top: 58px;
+    left: 16px;
+    right: 16px;
+    display: none;
+    pointer-events: auto;
+
+    max-height: 320px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    background: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 12px;
+    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.18);
+
+    z-index: 1000;
+}
+
+.history-suggestion-item {
+    width: 100%;
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 8px 12px;
+    border: none;
+    border-bottom: 1px solid #eeeeee;
+
+    background: #ffffff;
+    color: #222222;
+    text-align: left;
+    cursor: pointer;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.history-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.history-suggestion-item:active {
+    background: #e6f4f4;
+}
+
+.history-suggestion-image {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    border-radius: 8px;
+    background: #f3f3f3;
+    font-size: 24px;
+}
+
+.history-suggestion-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.history-suggestion-main {
+    min-width: 0;
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.history-suggestion-name {
+    overflow: hidden;
+    color: #343a40;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.history-suggestion-meta {
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+@media (max-width: 480px) {
+    .history-suggestions {
+        max-height: 280px;
+    }
+
+    .history-suggestion-item {
+        min-height: 54px;
+        padding: 7px 10px;
+    }
+
+    .history-suggestion-name {
+        font-size: 13px;
+    }
+}
+
+   /* ==========================================
+   Модальне вікно історії товарів
+   ========================================== */
+
+.history-modal-content {
+    max-height: 82vh;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.history-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.history-modal-header h3 {
+    margin: 0;
+}
+
+.history-close-button {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: #e9ecef;
+    color: #495057;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.history-close-button:active {
+    background: #dee2e6;
+    transform: scale(0.94);
+}
+
+.history-empty-text {
+    display: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.history-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 52vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.history-modal-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 58px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.history-modal-item.added {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: default;
+}
+
+.history-modal-item-image {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #f3f3f3;
+    font-size: 24px;
+}
+
+.history-modal-item-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+}
+
+.history-modal-item-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.history-modal-item-name {
+    overflow: hidden;
+    color: #343a40;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.history-modal-item-meta {
+    margin-top: 3px;
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+.history-modal-item-add {
+    min-width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary-teal);
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.history-modal-item-delete {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    margin-left: 8px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: #e9ecef;
+    color: #495057;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.history-modal-item-delete:active {
+    background: #dee2e6;
+    transform: scale(0.94);
+}
+
+.history-modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid #eeeeee;
+}
+
+.history-modal-actions button {
+    min-height: 42px;
+    flex: 1;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.history-clear-button {
+    background: #e9ecef;
+    color: #495057;
+    border: none;
+}
+
+.history-clear-button:active {
+    background: #dee2e6;
+}
+
+body.theme-dark .history-clear-button {
+    background: var(--border-color);
+    color: var(--text-main);
+}
+
+body.theme-dark .history-clear-button:active {
+    background: #38414d;
+}
+
+body.theme-light .history-clear-button {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.history-done-button {
+    background: var(--primary-teal);
+    color: #ffffff;
+}
+
+.history-done-button:active {
+    background: var(--dark-teal);
+}
+
+@media (max-width: 360px) {
+    .history-modal-item-name {
+        font-size: 12px;
+    }
+
+    .history-modal-item-delete {
+        min-width: 34px;
+        flex-basis: 34px;
+    }
+}
+
+   /* ==========================================
+   Магазин для пошуку
+   ========================================== */
+
+.search-store-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 0;
+}
+
+.search-store-option {
+    width: 100%;
+    min-height: 58px;
+    padding: 4px 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    background: var(--bg-card);
+    border: 1px solid #f1f3f5;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    color: #343a40;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: left;
+
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.search-store-option.store-line-atb,
+.history-suggestion-item.store-line-atb {
+    border-left: 4px solid #e63946;
+}
+
+.search-store-option.store-line-silpo,
+.history-suggestion-item.store-line-silpo {
+    border-left: 4px solid #ffd43b;
+}
+
+.search-store-option.store-line-varus,
+.history-suggestion-item.store-line-varus {
+    border-left: 4px solid #ff922b;
+}
+
+.search-store-option:active {
+    background: #e6f4f4;
+}
+
+.search-store-check {
+    color: var(--primary-teal);
+    font-size: 18px;
+    font-weight: 800;
+}
+/* ==========================================
+   Картка товару: базові стилі
+   ========================================== */
+.product-item {
+    min-height: 58px;
+    padding: 4px 2px 4px 4px;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+
+    background: var(--bg-card);
+    border: 1px solid #f1f3f5;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.product-item.bought .name {
+    text-decoration: line-through;
+    color: #495057;
+}
+.store-line-atb {
+    border-left: 4px solid #e63946;
+}
+
+.store-line-silpo {
+    border-left: 4px solid #ffd43b;
+}
+
+.store-line-varus {
+    border-left: 4px solid #ff922b;
+}
+.history-modal-item.store-line-atb {
+    border-left: 4px solid #e63946;
+}
+
+.history-modal-item.store-line-silpo {
+    border-left: 4px solid #ffd43b;
+}
+
+.history-modal-item.store-line-varus {
+    border-left: 4px solid #ff922b;
+}
+.product-info {
+    min-width: 0;
+    flex: 1;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.product-img {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    min-height: 50px;
+    max-height: 50px;
+    flex-shrink: 0;
+
+    overflow: hidden;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    font-size: 26px;
+    cursor: pointer;
+}
+
+.product-img:active {
+    transform: scale(0.96);
+}
+
+.product-details {
+    min-width: 0;
+    flex: 1;
+}
+
+.product-title-line {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 3px;
+}
+
+.product-details .name {
+    display: -webkit-box;
+    overflow: hidden;
+    min-width: 0;
+    flex: 1;
+    color: #343a40;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.25;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.quantity-editor {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.quantity-adjust-btn,
+.quantity-confirm-btn {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.quantity-adjust-btn {
+    background: #e6f4f4;
+    color: var(--dark-teal);
+}
+
+.quantity-draft-value {
+    min-width: 38px;
+    color: var(--dark-teal);
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.quantity-confirm-btn {
+    background: var(--primary-teal);
+    color: #ffffff;
+    font-size: 17px;
+}
+
+.product-actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 6px;
+}
+
+.item-total {
+    min-width: 52px;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    color: var(--dark-teal);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+   /* ==========================================
+   Список майже до країв екрана
+   ========================================== */
+.list-content {
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+/* ==========================================
+   Фото товару без рамки
+   ========================================== */
+.product-img {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.product-img img {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+.list-switcher {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.list-switcher-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.list-switcher-label,
+#listSwitcherLabel {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.list-switcher-arrow {
+    font-size: 10px;
+    opacity: 0.85;
+}
+
+.list-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 40;
+    width: max-content;
+    min-width: 200px;
+    max-width: 260px;
+    max-height: 260px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+    padding: 5px;
+}
+
+.list-dropdown.open {
+    display: block;
+}
+
+.list-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #343a40;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.list-dropdown-item:active {
+    background: #e6f4f4;
+}
+
+.list-dropdown-item.active {
+    background: #e6f4f4;
+    color: var(--dark-teal);
+}
+
+.list-dropdown-check {
+    color: var(--dark-teal);
+    font-weight: 800;
+}
+/* ==========================================
+   Теми застосунку
+   ========================================== */
+
+body.theme-standard {
+    --app-bg: #e9ecef;
+    --header-bg: #008080;
+    --header-text: #ffffff;
+    --card-bg: #ffffff;
+    --text-main: #212529;
+    --text-muted: #868e96;
+    --border-color: #dee2e6;
+    --accent: #008080;
+    --accent-dark: #005a5a;
+    --nav-bg: #005a5a;
+    --nav-text: #b2dfdf;
+    --nav-active: #ffffff;
+}
+
+body.theme-light {
+    --app-bg: #f4f6f8;
+    --header-bg: #ffffff;
+    --header-text: #005a5a;
+    --card-bg: #ffffff;
+    --text-main: #212529;
+    --text-muted: #6c757d;
+    --border-color: #e3e8ef;
+    --accent: #008080;
+    --accent-dark: #005a5a;
+    --nav-bg: #ffffff;
+    --nav-text: #6c757d;
+    --nav-active: #008080;
+}
+
+body.theme-dark {
+    --app-bg: #111418;
+    --header-bg: #171b21;
+    --header-text: #e9ecef;
+    --card-bg: #1e232a;
+    --text-main: #e9ecef;
+    --text-muted: #9aa3ad;
+    --border-color: #2c333c;
+    --accent: #20b2aa;
+    --accent-dark: #17827d;
+    --nav-bg: #171b21;
+    --nav-text: #9aa3ad;
+    --nav-active: #20b2aa;
+}
+
+body.theme-standard .phone-container,
+body.theme-light .phone-container,
+body.theme-dark .phone-container {
+    background: var(--app-bg);
+}
+
+body.theme-standard .header,
+body.theme-light .header,
+body.theme-dark .header {
+    background: var(--header-bg);
+    color: var(--header-text);
+}
+
+body.theme-standard .list-content,
+body.theme-light .list-content,
+body.theme-dark .list-content {
+    background: var(--app-bg);
+}
+
+body.theme-standard .product-item,
+body.theme-light .product-item,
+body.theme-dark .product-item {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+body.theme-standard .product-details .name,
+body.theme-light .product-details .name,
+body.theme-dark .product-details .name {
+    color: var(--text-main);
+}
+
+body.theme-standard .stats-panel,
+body.theme-light .stats-panel,
+body.theme-dark .stats-panel {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+body.theme-standard .bottom-nav,
+body.theme-light .bottom-nav,
+body.theme-dark .bottom-nav {
+    background: var(--nav-bg);
+}
+
+body.theme-standard .nav-item,
+body.theme-light .nav-item,
+body.theme-dark .nav-item {
+    color: var(--nav-text);
+}
+
+body.theme-standard .nav-item.active,
+body.theme-light .nav-item.active,
+body.theme-dark .nav-item.active {
+    color: var(--nav-active);
+}
+
+body.theme-standard .modal-content,
+body.theme-light .modal-content,
+body.theme-dark .modal-content {
+    background: var(--card-bg);
+    color: var(--text-main);
+}
+
+.theme-sub-menu {
+    display: none;
+    margin: 4px 6px 6px 37px;
+    padding: 4px;
+    border-radius: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.theme-sub-menu.visible {
+    display: block;
+}
+
+.theme-sub-menu button:active {
+    background: #e6f4f4;
+}
+
+body.theme-dark .theme-sub-menu button:active {
+    background: #26333a;
+}
+
+.theme-check {
+    visibility: hidden;
+    color: var(--accent);
+    font-weight: 800;
+}
+
+.theme-check.active {
+    visibility: visible;
+}
+/* Шапка та перемикач списків у темах */
+
+body.theme-standard .list-switcher-button,
+body.theme-light .list-switcher-button,
+body.theme-dark .list-switcher-button {
+    color: var(--header-text);
+}
+
+body.theme-standard .shop-logo {
+    border-color: var(--header-text);
+}
+
+body.theme-light .shop-logo {
+    border-color: #dee2e6;
+}
+
+body.theme-standard .list-dropdown,
+body.theme-light .list-dropdown,
+body.theme-dark .list-dropdown {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+body.theme-standard .list-dropdown-item,
+body.theme-light .list-dropdown-item,
+body.theme-dark .list-dropdown-item {
+    color: var(--text-main);
+}
+
+body.theme-standard .list-dropdown-item.active,
+body.theme-light .list-dropdown-item.active,
+body.theme-dark .list-dropdown-item.active {
+    background: #e6f4f4;
+    color: var(--accent-dark);
+}
+
+body.theme-dark .list-dropdown-item.active {
+    background: #23343a;
+    color: #7fe0d8;
+}
+
+body.theme-standard .list-dropdown-check,
+body.theme-light .list-dropdown-check,
+body.theme-dark .list-dropdown-check {
+    color: var(--accent);
+}
+/* Пошук і додавання товару */
+
+body.theme-standard .search-filter-bar,
+body.theme-light .search-filter-bar,
+body.theme-dark .search-filter-bar {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+body.theme-standard .search-input,
+body.theme-light .search-input,
+body.theme-dark .search-input {
+    background: var(--app-bg);
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+
+body.theme-standard .add-notice,
+body.theme-light .add-notice,
+body.theme-dark .add-notice {
+    background: #fff4e6;
+    border-color: #ffd8a8;
+    color: #d9480f;
+}
+/* Картки товарів у темах */
+
+body.theme-standard .category-header,
+body.theme-light .category-header,
+body.theme-dark .category-header {
+    color: var(--text-muted);
+    background: transparent;
+}
+
+body.theme-standard .product-details .meta,
+body.theme-light .product-details .meta,
+
+
+body.theme-standard .item-total,
+body.theme-light .item-total,
+body.theme-dark .item-total {
+    color: var(--accent);
+}
+
+body.theme-standard .quantity-inline-value,
+body.theme-light .quantity-inline-value,
+body.theme-dark .quantity-inline-value {
+    color: var(--text-muted);
+}
+
+body.theme-standard .product-item.bought .name,
+body.theme-light .product-item.bought .name,
+body.theme-dark .product-item.bought .name {
+    color: var(--text-muted);
+}
+/* Меню та модальні вікна */
+
+body.theme-standard .list-menu,
+body.theme-light .list-menu,
+body.theme-dark .list-menu {
+    background: var(--card-bg);
+}
+
+body.theme-standard .list-menu button,
+body.theme-light .list-menu button,
+body.theme-dark .list-menu button {
+    color: var(--text-main);
+}
+
+body.theme-standard .modal-content input,
+body.theme-light .modal-content input,
+body.theme-dark .modal-content input {
+    background: var(--app-bg);
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+
+body.theme-dark .modal-content input::placeholder {
+    color: #7d8791;
+}
+/* ==========================================
+   Темна тема: виправлення контрасту
+   ========================================== */
+
+body.theme-dark .history-suggestions {
+    background: #1e232a;
+    border: 1px solid #2c333c;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .history-suggestions * {
+    color: #e9ecef;
+}
+
+body.theme-dark .history-suggestions .history-suggestion-name,
+body.theme-dark .history-suggestions .history-suggestion-text {
+    color: #e9ecef;
+}
+
+body.theme-dark .history-suggestions .history-suggestion-meta,
+body.theme-dark .history-suggestions .history-suggestion-price {
+    color: #9aa3ad;
+}
+
+body.theme-dark .photo-option {
+    background: #1e232a;
+    border-color: #2c333c;
+}
+
+body.theme-dark .photo-option.selected {
+    border-color: #20b2aa;
+    background: #1f2f31;
+}
+
+body.theme-dark .photo-grid-label {
+    color: #9aa3ad;
+}
+
+body.theme-dark .shop-photo-search-input,
+body.theme-dark .search-input {
+    background: #111418;
+    color: #e9ecef;
+    border-color: #2c333c;
+}
+
+body.theme-dark .shop-photo-search-input::placeholder,
+body.theme-dark .search-input::placeholder {
+    color: #7d8791;
+}
+/* ==========================================
+   Темна тема: підказки, пошук і ціни
+   ========================================== */
+
+body.theme-dark .history-suggestions {
+    background: #1e232a;
+    border-color: #2c333c;
+}
+
+body.theme-dark .history-suggestion-item {
+    background: #1e232a;
+    color: #e9ecef;
+    border-bottom-color: #2c333c;
+}
+
+body.theme-dark .history-suggestion-item:active {
+    background: #26333a;
+}
+
+body.theme-dark .history-suggestion-image {
+    background: #111418;
+}
+
+body.theme-dark .history-suggestion-name {
+    color: #e9ecef;
+}
+
+body.theme-dark .history-suggestion-meta {
+    color: #7fe0d8;
+}
+
+body.theme-dark .atb-search-result {
+    background: #1e232a;
+    border-color: #2c333c;
+    color: #e9ecef;
+}
+
+body.theme-dark .atb-search-result:active {
+    background: #26333a;
+    border-color: #20b2aa;
+}
+
+body.theme-dark .atb-result-photo {
+    background: #111418;
+    border-color: #2c333c;
+}
+
+body.theme-dark .atb-result-name {
+    color: #e9ecef;
+}
+
+body.theme-dark .atb-result-price {
+    color: #7fe0d8;
+}
+
+/* ==========================================
+   Темна тема: історія товарів
+   ========================================== */
+
+body.theme-dark .history-modal-content {
+    background: #1e232a;
+    color: #e9ecef;
+}
+
+body.theme-dark .history-modal-header h3 {
+    color: #e9ecef;
+}
+
+body.theme-dark .history-modal-list {
+    background: #1e232a;
+}
+
+body.theme-dark .history-modal-item {
+    background: #1e232a;
+    color: #e9ecef;
+    border-color: #2c333c;
+}
+
+
+body.theme-dark .history-modal-item .history-item-name,
+body.theme-dark .history-modal-item .history-name {
+    color: #e9ecef;
+}
+
+body.theme-dark .history-modal-item .history-item-meta,
+body.theme-dark .history-modal-item .history-meta,
+body.theme-dark .history-modal-item .history-item-price,
+body.theme-dark .history-modal-item .history-price {
+    color: #7fe0d8;
+}
+
+body.theme-dark .history-empty-text {
+    color: #9aa3ad;
+}
+
+body.theme-dark .history-modal-item-delete:active {
+    background: #dee2e6;
+}
+body.theme-dark .history-modal-item {
+    background: #1e232a;
+    border-color: #2c333c;
+}
+
+body.theme-dark .history-modal-item-name {
+    color: #e9ecef;
+}
+
+body.theme-dark .history-modal-item-meta {
+    color: #9aa3ad;
+}
+
+/* Темна тема: ціна товару без рамки */
+
+body.theme-dark .item-total {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    color: #7fe0d8;
+}
+
+/* Ціна товару */
+
+.item-total {
+    color: var(--dark-teal);
+}
+
+body.theme-dark .item-total {
+    color: #7fe0d8;
+}
+
+.item-total.price-unavailable {
+    color: #e63946;
+}
+
+body.theme-standard .item-total.price-unavailable,
+body.theme-light .item-total.price-unavailable {
+    color: #e63946;
+}
+
+body.theme-dark .item-total.price-unavailable {
+    color: #ff7b7b;
+}
+body.theme-dark .history-close-button {
+    color: #e9ecef;
+    background: #26333a;
+    border: 1px solid #2c333c;
+    border-radius: 8px;
+}
+body.theme-dark .history-modal-item-delete {
+    color: #e9ecef;
+    background: #26333a;
+    border: 1px solid #2c333c;
+    border-radius: 8px;
+}
+
+body.theme-dark .history-modal-item-delete:active {
+    background: #32414c;
+}
+/* ==========================================
+   Редагування історії
+   ========================================== */
+
+.edit-history-modal {
+    max-width: 360px;
+}
+
+.edit-history-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.edit-history-modal input {
+    margin-bottom: 14px;
+}
+
+.edit-history-store-suggestion {
+    margin: -6px 0 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-main);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+    cursor: pointer;
+}
+
+.edit-history-store-suggestion.store-atb {
+    border-left-color: #e63946;
+}
+
+.edit-history-store-suggestion.store-silpo {
+    border-left-color: #ffc107;
+}
+
+.edit-history-cancel-button {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.edit-history-save-button {
+    background: var(--primary-teal);
+    color: #ffffff;
+}
+.history-modal-item-edit,
+.history-modal-item-delete {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    margin-left: 6px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: #e9ecef;
+    color: #495057;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.history-modal-item-delete:active {
+    background: #dee2e6;
+    transform: scale(0.94);
+}
+/* ==========================================
+   М'який сучасний вигляд карток товарів
+   ========================================== */
+
+.product-item {
+    border-radius: 16px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.product-item:active {
+    transform: scale(0.99);
+}
+
+body.theme-dark .product-item {
+    box-shadow: none;
+}
+
+.product-img {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.product-img img {
+    border-radius: 12px;
+}
+
+.product-details .name {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.25;
+}
+/* ==========================================
+   М'який сучасний вигляд пошуку товару
+   ========================================== */
+
+.search-filter-bar {
+    padding: 10px 16px 12px;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-input {
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+    background: var(--app-bg);
+    color: var(--text-main);
+    font-size: 15px;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(32, 178, 170, 0.15);
+}
+
+.add-inline-btn {
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.10);
+}
+
+body.theme-dark .add-inline-btn {
+    box-shadow: none;
+}
+/* ==========================================
+   М'який сучасний вигляд хедера
+   ========================================== */
+
+.header {
+    padding-left: 14px;
+    padding-right: 14px;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+}
+
+.list-switcher-button {
+    border-radius: 12px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.14);
+    transition: background-color 0.2s ease, transform 0.12s ease;
+}
+
+.list-switcher-button:active {
+    transform: scale(0.97);
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.list-menu-button {
+    border-radius: 12px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.14);
+    transition: background-color 0.2s ease, transform 0.12s ease;
+}
+
+.list-menu-button:active {
+    transform: scale(0.94);
+    background: rgba(255, 255, 255, 0.22);
+}
+
+body.theme-light .list-switcher-button,
+body.theme-light .list-menu-button {
+    background: rgba(0, 90, 90, 0.08);
+}
+
+body.theme-light .list-switcher-button:active,
+body.theme-light .list-menu-button:active {
+    background: rgba(0, 90, 90, 0.14);
+}
+
+body.theme-dark .list-switcher-button,
+body.theme-dark .list-menu-button {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .list-switcher-button:active,
+body.theme-dark .list-menu-button:active {
+    background: rgba(255, 255, 255, 0.14);
+}
+/* ==========================================
+   М'який сучасний вигляд меню та тем
+   ========================================== */
+
+.list-menu,
+.theme-sub-menu {
+    border-radius: 16px;
+    padding: 8px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+}
+
+.list-menu button,
+.theme-sub-menu button {
+    width: 100%;
+    min-height: 44px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        transform 0.12s ease;
+}
+
+.list-menu button:active,
+.theme-sub-menu button:active {
+    background: rgba(32, 178, 170, 0.12);
+    transform: scale(0.98);
+}
+
+.theme-sub-menu button {
+    justify-content: flex-start;
+}
+
+.theme-check {
+    color: var(--accent);
+    font-weight: 800;
+}
+/* ==========================================
+   М'який сучасний вигляд модальних вікон
+   ========================================== */
+
+.modal {
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 18px 44px rgba(15, 23, 42, 0.22);
+}
+
+.modal-content h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.modal-content input,
+.modal-content textarea {
+    border-radius: 12px;
+    padding: 12px 14px;
+    background: var(--app-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(32, 178, 170, 0.15);
+}
+
+.modal-actions button {
+    border-radius: 12px;
+    min-height: 42px;
+    transition:
+        transform 0.12s ease,
+        background-color 0.2s ease;
+}
+
+.modal-actions button:active {
+    transform: scale(0.97);
+}
+
+.btn-add {
+    border-radius: 12px;
+}
+/* ==========================================
+   М'який сучасний вигляд історії товарів
+   ========================================== */
+
+.history-modal-content {
+    border-radius: 20px;
+}
+
+.history-modal-header {
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.history-modal-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.history-close-button {
+    border-radius: 12px;
+    transition:
+        background-color 0.15s ease,
+        transform 0.12s ease;
+}
+
+.history-close-button:active {
+    transform: scale(0.92);
+    background: rgba(32, 178, 170, 0.12);
+}
+
+.history-modal-list {
+    gap: 10px;
+}
+
+.history-modal-item {
+    border-radius: 14px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--app-bg);
+
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.12s ease,
+        box-shadow 0.15s ease;
+}
+
+.history-modal-item:active,
+.history-modal-item.is-pressed {
+    background: #d3f3ef;
+    border-color: var(--primary-teal);
+    transform: scale(0.96);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+}
+
+body.theme-dark .history-modal-item:active,
+body.theme-dark .history-modal-item.is-pressed {
+    background: #24413f;
+    border-color: #4fd1c5;
+}
+
+.history-modal-item-name {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.history-modal-item-meta {
+    font-size: 12px;
+}
+
+.history-modal-actions button {
+    border-radius: 12px;
+    min-height: 42px;
+    transition:
+        transform 0.12s ease,
+        background-color 0.2s ease;
+}
+
+.history-modal-actions button:active {
+    transform: scale(0.97);
+}
+/* ==========================================
+   Виправлення хедера: без підсвітлення кнопок
+   ========================================== */
+
+.list-switcher-button,
+.list-menu-button {
+    background: transparent;
+    box-shadow: none;
+}
+
+.list-switcher-button:active,
+.list-menu-button:active {
+    background: transparent;
+    transform: none;
+}
+
+body.theme-light .list-switcher-button,
+body.theme-light .list-menu-button,
+body.theme-dark .list-switcher-button,
+body.theme-dark .list-menu-button {
+    background: transparent;
+}
+
+body.theme-light .list-switcher-button:active,
+body.theme-light .list-menu-button:active,
+body.theme-dark .list-switcher-button:active,
+body.theme-dark .list-menu-button:active {
+    background: transparent;
+}
+
+.list-switcher-arrow {
+    display: none;
+}
+
+.list-menu-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+}
+/* Компактніші картки товарів */
+
+/* Компактніші картки товарів */
+
+.product-item {
+    min-height: 58px;
+    padding: 4px 2px 4px 4px;
+}
+
+.product-img {
+    width: 50px;
+    min-height: 50px;
+}
+
+.product-details .name {
+    font-size: 14px;
+    line-height: 1.15;
+}
+/* Кількість під ціною та ширша назва товару */
+
+.product-title-line {
+    display: block;
+}
+
+.product-details .name {
+    display: block;
+    width: 100%;
+    font-size: 15px;
+    line-height: 1.2;
+}
+
+.price-quantity-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.quantity-inline-value {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+/* ==========================================
+   Сучасне натискання: назва списку та меню
+   ========================================== */
+
+.list-switcher-button,
+.list-menu-button {
+    transition:
+        background-color 0.18s ease,
+        transform 0.12s ease,
+        box-shadow 0.18s ease;
+}
+
+.list-switcher-button:active,
+.list-menu-button:active {
+    transform: scale(0.96);
+    background: rgba(255, 255, 255, 0.28);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+}
+
+body.theme-light .list-switcher-button:active,
+body.theme-light .list-menu-button:active {
+    transform: scale(0.96);
+    background: rgba(0, 90, 90, 0.16);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.10);
+}
+/* ==========================================
+   Анімована лінія завантаження Сільпо
+   ========================================== */
+.silpo-loading-line {
+    position: relative;
+    height: 4px;
+    width: 100%;
+    margin-bottom: 12px;
+    border-radius: 999px;
+    background: #e9ecef;
+    overflow: hidden;
+}
+
+.silpo-loading-line::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -40%;
+    height: 100%;
+    width: 40%;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        #20b2aa,
+        #7fe0d8,
+        #20b2aa
+    );
+    animation: silpoLoadingMove 1.1s linear infinite;
+}
+
+@keyframes silpoLoadingMove {
+    0% {
+        left: -40%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+body.theme-dark .silpo-loading-line {
+    background: #2c333c;
+}
+/* Кольорова лінія останнього магазину на картці товару */
+.product-item.store-line-atb {
+    border-left: 4px solid #e63946 !important;
+}
+
+.product-item.store-line-silpo {
+    border-left: 4px solid #ffd43b !important;
+}
+
+.product-item.store-line-varus {
+    border-left: 4px solid #ff922b !important;
+}
