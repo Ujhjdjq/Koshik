@@ -5068,6 +5068,9 @@ function shareList() {
 
     callFirebaseSharedBridge('publishSharedList', exportJson)
         .then(result => {
+const shareLink =
+                'https://koshyk-9d9c9.web.app/i/' +
+                encodeURIComponent(result.id);
             if (appData.currentList === 'list9') {
                 appData.sharedListRemoteId = result.id;
                 appData.sharedListExpiresAt = result.expiresAt;
